@@ -1,0 +1,58 @@
+{
+  "name": "@yetifrozty/solid-plugin",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yetifrozty/solid-plugin.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "vite build && export SSR=true && vite build && tsc --emitDeclarationOnly --noEmit false"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/registerPlugins.d.ts",
+      "default": "./src/registerPlugins.js"
+    },
+    "./client": {
+      "types": "./src/client/client.d.ts",
+      "default": "./src/client/client.tsx"
+    },
+    "./server": {
+      "types": "./src/server/server.d.ts",
+      "default": "./src/server/server.ts"
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "peerDependencies": {
+    "@yetifrozty/base-plugin-system": "^1.0.0",
+    "@yetifrozty/express-plugin": "^1.0.0",
+    "@yetifrozty/vite-plugin": "^1.0.0",
+    "solid-js": "^1.9.7"
+  },
+  "dependencies": {
+    "@yetifrozty/base-plugin-system": "^1.0.0",
+    "@yetifrozty/express-plugin": "^1.0.0",
+    "@yetifrozty/vite-plugin": "^1.0.0",
+    "solid-js": "^1.9.7"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.3",
+    "typescript": "^5.0.0",
+    "vite": "^6.3.5",
+    "vite-plugin-solid": "^2.11.6"
+  }
+}
