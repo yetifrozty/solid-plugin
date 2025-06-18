@@ -1,11 +1,9 @@
 import type { Component } from "solid-js";
-import type { FetcherData } from "./fetch.js";
 import { ClientBaseHooks } from "@yetifrozty/vite-plugin";
 
 export interface SolidClientPlugin extends ClientBaseHooks {
   name: "core-solid-client";
-  getClientAPI: (publicData?: Record<string, any>, privateData?: Record<string, any>, preload?: (module: string) => void) => Promise<ClientAPI>;
-  getFetcher: (fetcherData?: Partial<FetcherData>) => typeof fetch;
+  _ssrGetClientAPI?: (publicData?: Record<string, any>, privateData?: Record<string, any>, preload?: (module: string) => void) => Promise<ClientAPI>;
 }
 
 export interface SolidClientHooks {

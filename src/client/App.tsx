@@ -1,7 +1,12 @@
-import { createContext, Suspense, useContext, type Component } from "solid-js";
+import { Suspense, useContext, type Component } from "solid-js";
 import { type ClientAPI } from "./types.js";
+import _ClientAPIContext from "./context.js";
 
-const ClientAPIContext = createContext<ClientAPI>();
+let ClientAPIContext = _ClientAPIContext;
+
+import.meta.hot?.accept("./context.js", (Context) => {
+  ClientAPIContext = Context?.default;
+});
 
 export const useClientAPI = () => {
   const context = useContext(ClientAPIContext);

@@ -21,8 +21,12 @@ export function getSolidRequestHandler(plugins: any[], resources: Resources) {
       return;
     }
     
-    const privateData: Partial<FetcherData> = {
-      cookies: req.headers.cookie ?? ""
+    const origin = `http${vite.mode === "dev" && vite.server?.config.server.https ? "s" : ""}://${vite.mode === "dev" && vite.server?.config.server.host || "localhost"}:${port || 3000}`;
+    const host = vite.mode === "dev" && vite.server?.config.server.host && vite.server?.config.server.host !== true ? vite.server?.config.server.host : "localhost";
+    const privateData: FetcherData = {
+      cookies: req.headers.cookie ?? "",
+      origin,
+      host
     };
     const url = req.originalUrl
     try {
@@ -32,7 +36,7 @@ export function getSolidRequestHandler(plugins: any[], resources: Resources) {
       }
 
       const clientPlugin = plugins.find((p): p is SolidClientPlugin => p.name === "core-solid-client")!;
-      const clientAPI = await clientPlugin.getClientAPI(serverData, privateData, preload);
+      const clientAPI = await clientPlugin._ssrGetClientAPI?.(serverData, privateData, preload)!;
       
       // Generate preload modules for head
       const head = preloadModules(preloadQueue, vite.mode === "dev" ? vite.server : undefined) + generateHydrationScript() +
