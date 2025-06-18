@@ -1,6 +1,5 @@
 import { createContext, Suspense, useContext, type Component } from "solid-js";
 import { type ClientAPI } from "./types.js";
-import { generateHydrationScript } from "solid-js/web";
 
 const ClientAPIContext = createContext<ClientAPI>();
 
@@ -17,16 +16,16 @@ interface AppProps {
 }
 
 const App: Component<AppProps> = (props) => {
-  const getDynamicComponent = () => props.clientAPI.component!;
+  const DynamicComponent = () => {
+    const Component = props.clientAPI.component!;
+    return <Component />;
+  }
   return (
     <ClientAPIContext.Provider value={props.clientAPI}>
       {/* Dynamic component rendering based on clientAPI.component */}
-      {/* <Suspense fallback={<div>Loading...</div>}> */}
-        {(() => {
-          const DynamicComponent = getDynamicComponent();
-          return <DynamicComponent />;
-        })()}
-      {/* </Suspense> */}
+      <Suspense fallback={<div>Loading...</div>}>
+        <DynamicComponent />
+      </Suspense>
     </ClientAPIContext.Provider>
     
   );

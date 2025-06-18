@@ -1,5 +1,5 @@
 import App from "../client/App.js";
-import { renderToString, createComponent, renderToStream, generateHydrationScript } from "solid-js/web";
+import { renderToString, createComponent, renderToStream, generateHydrationScript, renderToStringAsync } from "solid-js/web";
 import type { SolidClientPlugin } from "../client/types.js";
 import { preloadModules } from "./preload.js";
 import type { Request, Response } from "express";
@@ -38,7 +38,7 @@ export function getSolidRequestHandler(plugins: any[], resources: Resources) {
       const head = preloadModules(preloadQueue, vite.mode === "dev" ? vite.server : undefined) + generateHydrationScript() +
         `<script id="cms-ssr" type="application/json">${JSON.stringify(serverData)}</script>\n`;
 
-      const rendered = renderToString(() => <App clientAPI={clientAPI} />);
+      const rendered = await renderToStringAsync(() => <App clientAPI={clientAPI} />);
       const html = await vite.generateHTMLTemplate(url, head, rendered);
       res.header("Content-Type", "text/html").send(html);
       // // Set response headers for streaming
