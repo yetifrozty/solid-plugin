@@ -41,8 +41,7 @@ export function getSolidRequestHandler(plugins: any[], resources: Resources) {
       // Generate preload modules for head
       const head = preloadModules(preloadQueue, vite.mode === "dev" ? vite.server : undefined) + generateHydrationScript() +
         `<script id="cms-ssr" type="application/json">${JSON.stringify(serverData)}</script>\n`;
-
-      const rendered = await renderToStringAsync(() => <App clientAPI={clientAPI} />);
+      const rendered = renderToString(() => <App clientAPI={clientAPI} />);
       const html = await vite.generateHTMLTemplate(url, head, rendered);
       res.header("Content-Type", "text/html").send(html);
       // // Set response headers for streaming
@@ -66,7 +65,7 @@ export function getSolidRequestHandler(plugins: any[], resources: Resources) {
       if (vite.mode === "dev" && vite.server) {
         vite.server.ssrFixStacktrace(e);
       }
-      console.log(e.stack);
+      console.log(e.stack, e);
       res.status(500).end(e.stack);
     }
   }

@@ -28,11 +28,10 @@ const App: Component<AppProps> = (props) => {
   return (
     <ClientAPIContext.Provider value={props.clientAPI}>
       {/* Dynamic component rendering based on clientAPI.component */}
-      <Suspense fallback={<div>Loading...</div>}>
+      {/* <Suspense fallback={<div>Loading...</div>}> */}
         <DynamicComponent />
-      </Suspense>
+      {/* </Suspense> */}
     </ClientAPIContext.Provider>
-    
   );
 };
 
