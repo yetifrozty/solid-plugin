@@ -1,72 +1,46 @@
 import App from "../client/App.js";
 import { renderToString, createComponent, renderToStream, generateHydrationScript, renderToStringAsync } from "solid-js/web";
-import type { SolidClientPlugin } from "../client/types.js";
+import type { ClientAPI, SolidClientPlugin } from "../client/types.js";
 import { preloadModules } from "./preload.js";
 import type { Request, Response } from "express";
 import type { Resources, ServerData } from "./types.js";
 import type { FetcherData } from "../client/fetch.js";
+import { InitVite } from "@yetifrozty/vite-plugin";
 
-export function getSolidRequestHandler(plugins: any[], resources: Resources) {
-  const { vite, port } = resources;
-  return async (req: Request, res: Response, serverData: ServerData) => {
-    if (!req.headers.accept?.includes("text/html")) {
-      res.status(200)
-        .set({
-          "Content-Type": "application/json",
-          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-          "Pragma": "no-cache",
-          "Expires": "0"
-        })
-        .send(serverData);
-      return;
-    }
-    
-    const origin = `http${vite.mode === "dev" && vite.server?.config.server.https ? "s" : ""}://${vite.mode === "dev" && vite.server?.config.server.host || "localhost"}:${port || 3000}`;
-    const host = vite.mode === "dev" && vite.server?.config.server.host && vite.server?.config.server.host !== true ? vite.server?.config.server.host : "localhost";
-    const privateData: FetcherData = {
-      cookies: req.headers.cookie ?? "",
-      origin,
-      host
-    };
-    const url = req.originalUrl
-    try {
-      const preloadQueue: string[] = [];
-      function preload(module: string) {
-        preloadQueue.push(module);
-      }
+export async function renderSync(head: string, url: string, vite: InitVite, res: Response, clientAPI: ClientAPI) {
+  const rendered = renderToString(() => <App clientAPI={clientAPI} />);
+  const html = await vite.generateHTMLTemplate(url, head, rendered);
+  res.header("Content-Type", "text/html").send(html);
+}
 
-      const clientPlugin = plugins.find((p): p is SolidClientPlugin => p.name === "core-solid-client")!;
-      const clientAPI = await clientPlugin._ssrGetClientAPI?.(serverData, privateData, preload)!;
-      
-      // Generate preload modules for head
-      const head = preloadModules(preloadQueue, vite.mode === "dev" ? vite.server : undefined) + generateHydrationScript() +
-        `<script id="cms-ssr" type="application/json">${JSON.stringify(serverData)}</script>\n`;
-      const rendered = renderToString(() => <App clientAPI={clientAPI} />);
-      const html = await vite.generateHTMLTemplate(url, head, rendered);
-      res.header("Content-Type", "text/html").send(html);
-      // // Set response headers for streaming
-      // res.status(200).set({ 
-      //   "Content-Type": "text/html",
-      //   "Transfer-Encoding": "chunked"
-      // });
+export async function renderAsync(head: string, url: string, vite: InitVite, res: Response, clientAPI: ClientAPI) {
+  const rendered = await renderToStringAsync(() => <App clientAPI={clientAPI} />);
+  const html = await vite.generateHTMLTemplate(url, head, rendered);
+  res.header("Content-Type", "text/html").send(html);
+}
 
-      // // Get HTML template and split it at the app placeholder
-      // const templateHtml = await vite.generateHTMLTemplate(url, head, "<!--app-html-->");
-      // const [htmlStart, htmlEnd] = templateHtml.split("<!--app-html-->");
-      
-      // // Send the opening HTML immediately
-      // res.write(htmlStart);
+export async function renderStream(head: string, url: string, vite: InitVite, res: Response, clientAPI: ClientAPI) {
+  // Set response headers for streaming
+  res.status(200).set({ 
+    "Content-Type": "text/html",
+    "Transfer-Encoding": "chunked"
+  });
 
-      // // Render the SolidJS component to stream
-      // const stream = renderToStream(() => <App clientAPI={clientAPI} />);
-      // stream.pipe(res);
-    } catch (_e) {
-      const e = _e as Error;
-      if (vite.mode === "dev" && vite.server) {
-        vite.server.ssrFixStacktrace(e);
-      }
-      console.log(e.stack, e);
-      res.status(500).end(e.stack);
+  // Get HTML template and split it at the app placeholder
+  const templateHtml = await vite.generateHTMLTemplate(url, head, "<!--app-html-->");
+  const [htmlStart, htmlEnd] = templateHtml.split("<!--app-html-->");
+
+  res.write(htmlStart);
+
+  // Render the SolidJS component to stream
+  const stream = renderToStream(() => <App clientAPI={clientAPI} />);
+  const streamHandler = {
+    write: (v: string) => {
+      res.write(v);
+    },
+    end: () => {
+      res.end(htmlEnd);
     }
   }
+  stream.pipe(streamHandler);
 }

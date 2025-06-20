@@ -39,13 +39,13 @@
   "peerDependencies": {
     "@yetifrozty/base-plugin-system": "^1.0.0",
     "@yetifrozty/express-plugin": "^1.0.0",
-    "@yetifrozty/vite-plugin": "^1.0.0",
+    "@yetifrozty/vite-plugin": "^1.0.1",
     "solid-js": "^1.9.7"
   },
   "dependencies": {
     "@yetifrozty/base-plugin-system": "^1.0.0",
     "@yetifrozty/express-plugin": "^1.0.0",
-    "@yetifrozty/vite-plugin": "^1.0.0",
+    "@yetifrozty/vite-plugin": "^1.0.1",
     "solid-js": "^1.9.7"
   },
   "devDependencies": {
